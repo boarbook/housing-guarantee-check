@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>住宅完成保証 未加入リスク診断</title>
+<style>
+  :root{
+    --navy:#1E2761;
+    --navy-dark:#141B49;
+    --ice:#CADCFC;
+    --gold:#B8892B;
+    --gold-light:#E8D9B5;
+    --text:#26314A;
+    --muted:#5B6B8C;
+    --card:#F4F7FC;
+    --line:#DCE3F0;
+    --safe:#0E8F6E;
+    --warn:#C98A1F;
+    --danger:#B23A3A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Yu Gothic","Hiragino Sans","Noto Sans JP",sans-serif;
+    background:linear-gradient(180deg,#F7F9FD 0%, #EEF2FA 100%);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:40px 16px 80px;
+  }
+  .wrap{width:100%;max-width:720px;}
+
+  .header{
+    background:var(--navy);
+    border-radius:16px;
+    padding:36px 32px;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+    margin-bottom:28px;
+  }
+  .header::after{
+    content:"";
+    position:absolute;
+    right:-40px; top:-60px;
+    width:180px;height:180px;
+    border-radius:50%;
+    background:var(--navy-dark);
+  }
+  .eyebrow{
+    color:var(--gold); font-size:13px; font-weight:700;
+    letter-spacing:2px; margin-bottom:10px; position:relative; z-index:1;
+  }
+  h1{
+    font-size:25px; margin:0 0 10px; position:relative; z-index:1; line-height:1.4;
+  }
+  .lead{
+    color:var(--ice); font-size:14.5px; line-height:1.7; margin:0; position:relative; z-index:1;
+  }
+
+  .progress-track{
+    height:6px; background:var(--line); border-radius:99px; margin:0 0 28px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; width:0%; background:var(--gold); border-radius:99px;
+    transition:width .3s ease;
+  }
+
+  .q-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px;}
+  .q-item{
+    background:#fff; border:1px solid var(--line); border-radius:12px;
+    padding:18px 20px; display:flex; align-items:flex-start; gap:14px;
+    cursor:pointer; transition:border-color .15s ease, background .15s ease;
+  }
+  .q-item:hover{border-color:var(--gold);}
+  .q-item.checked{background:var(--card); border-color:var(--navy);}
+  .q-item.key{border-color:var(--gold-light); background:#FFFBF3;}
+  .q-item.key.checked{background:var(--card); border-color:var(--navy);}
+
+  .q-num{
+    flex:none; width:26px;height:26px;border-radius:50%;
+    background:var(--card); color:var(--muted); font-size:12.5px; font-weight:700;
+    display:flex;align-items:center;justify-content:center; margin-top:1px;
+  }
+  .q-item.checked .q-num{background:var(--navy); color:#fff;}
+
+  .checkbox{
+    flex:none; width:22px;height:22px; border-radius:6px; border:2px solid var(--line);
+    display:flex;align-items:center;justify-content:center; margin-top:1px;
+    transition:all .15s ease; background:#fff;
+  }
+  .q-item.checked .checkbox{background:var(--navy); border-color:var(--navy);}
+  .checkbox svg{width:13px;height:13px; opacity:0; transition:opacity .1s ease;}
+  .q-item.checked .checkbox svg{opacity:1;}
+
+  .q-text{font-size:15px; line-height:1.6; color:var(--text);}
+  .q-sub{display:block; font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.5;}
+  .key-tag{
+    display:inline-block; font-size:10.5px; font-weight:700; color:var(--gold);
+    border:1px solid var(--gold-light); border-radius:99px; padding:1px 8px; margin-bottom:5px;
+  }
+  .q-item input{position:absolute; opacity:0; pointer-events:none;}
+
+  .submit-row{margin-top:30px; text-align:center;}
+  .btn{
+    appearance:none; border:none; cursor:pointer;
+    background:var(--gold); color:#fff; font-size:15.5px; font-weight:700;
+    padding:15px 40px; border-radius:99px; letter-spacing:.5px;
+    transition:transform .12s ease, box-shadow .12s ease;
+    box-shadow:0 8px 20px rgba(184,137,43,.28);
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:focus-visible{outline:3px solid var(--navy); outline-offset:3px;}
+  .hint{margin-top:12px; font-size:12.5px; color:var(--muted);}
+
+  /* Result */
+  .result{
+    display:none; margin-top:28px; background:#fff; border-radius:16px;
+    border:1px solid var(--line); padding:32px; text-align:center;
+  }
+  .result.show{display:block; animation:fadeUp .35s ease;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+  .gauge-wrap{position:relative; width:200px; height:200px; margin:0 auto 18px;}
+  .gauge-wrap svg{transform:rotate(-90deg);}
+  .gauge-pct{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .gauge-pct .num{font-size:38px; font-weight:800; line-height:1;}
+  .gauge-pct .label{font-size:12px; color:var(--muted); margin-top:4px;}
+
+  .level-badge{
+    display:inline-block; padding:6px 18px; border-radius:99px; font-size:13.5px; font-weight:700;
+    margin-bottom:14px;
+  }
+  .result-msg{font-size:15px; line-height:1.8; color:var(--text); max-width:500px; margin:0 auto 20px;}
+
+  .checked-list{
+    text-align:left; background:var(--card); border-radius:12px; padding:18px 20px;
+    margin:0 auto 20px; max-width:540px;
+  }
+  .checked-list h3{font-size:13px; color:var(--navy); margin:0 0 10px; letter-spacing:.5px;}
+  .checked-list ul{margin:0; padding-left:18px; font-size:13.5px; color:var(--muted); line-height:1.9;}
+
+  .cta-box{
+    max-width:540px; margin:0 auto; background:var(--navy); border-radius:14px;
+    padding:26px 24px; color:#fff;
+  }
+  .cta-box h3{margin:0 0 8px; font-size:17px;}
+  .cta-box p{margin:0 0 16px; font-size:13.5px; color:var(--ice); line-height:1.7;}
+  .cta-btn{
+    display:inline-block; background:var(--gold); color:#fff; font-weight:700; font-size:14.5px;
+    padding:12px 30px; border-radius:99px; text-decoration:none;
+  }
+
+  .retry{
+    margin-top:20px; background:none; border:none; color:var(--muted); font-size:12.5px;
+    text-decoration:underline; cursor:pointer;
+  }
+
+  footer{text-align:center; margin-top:24px; font-size:11.5px; color:var(--muted); line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="eyebrow">未加入企業向け 緊急診断</div>
+    <h1>その経営、倒産リスクが<br>無防備なままかもしれません</h1>
+    <p class="lead">住宅完成保証への未加入は、お客様からの信頼喪失・受注機会の損失に直結します。自社の状態を30秒でチェックしてください。</p>
+  </div>
+
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+  <ul class="q-list" id="qList"></ul>
+
+  <div class="submit-row">
+    <button class="btn" id="submitBtn">危険度を診断する</button>
+    <div class="hint" id="hintText">8項目中 0項目にチェック</div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="gauge-wrap">
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="86" fill="none" stroke="#EEF2FA" stroke-width="16"/>
+        <circle id="gaugeArc" cx="100" cy="100" r="86" fill="none" stroke="var(--gold)" stroke-width="16"
+                stroke-linecap="round" stroke-dasharray="540" stroke-dashoffset="540"
+                style="transition:stroke-dashoffset .6s ease, stroke .3s ease;"/>
+      </svg>
+      <div class="gauge-pct">
+        <div class="num" id="pctNum">0%</div>
+        <div class="label">未加入リスク度</div>
+      </div>
+    </div>
+
+    <div class="level-badge" id="levelBadge">診断結果</div>
+    <p class="result-msg" id="resultMsg"></p>
+
+    <div class="checked-list" id="unresolvedBox">
+      <h3>未対応・要確認の項目</h3>
+      <ul id="unresolvedList"></ul>
+    </div>
+
+    <div class="cta-box" id="ctaBox">
+      <h3 id="ctaTitle">住宅完成保証への登録をご検討ください</h3>
+      <p id="ctaMsg">未加入のままでは、比較検討段階でのお客様離脱や、いざという時の経営責任リスクを抱え続けることになります。まずは資料請求・個別相談から始められます。</p>
+      <a class="cta-btn" href="#" id="ctaLink">無料相談・資料請求はこちら</a>
+    </div>
+
+    <div>
+      <button class="retry" id="retryBtn">もう一度診断する</button>
+    </div>
+  </div>
+
+  <footer>本診断は一般的な傾向を簡易的に示す自己チェックです。実際の登録要件・審査基準・保証内容は各保証機関に直接ご確認ください。</footer>
+</div>
+
+<script>
+const questions = [
+  { text:"自社は住宅完成保証（保証機関）に登録している", sub:"未登録の場合、倒産時にお客様の既払金・工事継続を守る仕組みが自社にはありません", key:true },
+  { text:"倒産した場合、既払い工事費や引き継ぎ費用を自社が肩代わりする準備がある", sub:"保証がなければ、その負担はすべて自社の経営責任になります" },
+  { text:"直近3期分の決算書類など、登録・更新に必要な財務資料をいつでも提出できる", sub:"" },
+  { text:"営業担当者が保証内容・保証範囲をお客様に正しく説明できる", sub:"説明できなければ、比較検討段階で「保証あり」の競合他社に流れます" },
+  { text:"保証制度への登録を、パンフレットや営業資料・自社サイトで明記している", sub:"" },
+  { text:"金融機関・不動産会社からの紹介時に、保証登録の有無を聞かれたことがある、またはその対応ができる", sub:"" },
+  { text:"直近1年以内に、競合他社が保証制度を導入したという情報を把握している", sub:"" },
+  { text:"保証機関からの更新案内・有効期限を管理する担当者・仕組みがある", sub:"" }
+];
+
+const qList = document.getElementById('qList');
+const state = new Array(questions.length).fill(false);
+
+questions.forEach((q, i) => {
+  const li = document.createElement('li');
+  li.className = 'q-item' + (q.key ? ' key' : '');
+  li.setAttribute('role','checkbox');
+  li.setAttribute('aria-checked','false');
+  li.setAttribute('tabindex','0');
+  li.innerHTML = `
+    <span class="q-num">${i+1}</span>
+    <span class="checkbox">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <span class="q-text">${q.key ? '<span class="key-tag">最重要</span><br>' : ''}${q.text}${q.sub ? `<span class="q-sub">${q.sub}</span>` : ''}</span>
+  `;
+  function toggle(){
+    state[i] = !state[i];
+    li.classList.toggle('checked', state[i]);
+    li.setAttribute('aria-checked', String(state[i]));
+    updateHint();
+  }
+  li.addEventListener('click', toggle);
+  li.addEventListener('keydown', (e) => {
+    if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); toggle(); }
+  });
+  qList.appendChild(li);
+});
+
+const hintText = document.getElementById('hintText');
+const progressFill = document.getElementById('progressFill');
+function updateHint(){
+  const checked = state.filter(Boolean).length;
+  hintText.textContent = `${questions.length}項目中 ${checked}項目にチェック`;
+  progressFill.style.width = (checked / questions.length * 100) + '%';
+}
+
+// key question (index 0) carries extra weight, since non-registration is the core risk driver
+const KEY_WEIGHT = 2;
+
+document.getElementById('submitBtn').addEventListener('click', () => {
+  let earned = 0;
+  let totalWeight = 0;
+  questions.forEach((q, i) => {
+    const w = q.key ? KEY_WEIGHT : 1;
+    totalWeight += w;
+    if(state[i]) earned += w;
+  });
+  const riskPct = Math.round((totalWeight - earned) / totalWeight * 100);
+
+  const gaugeArc = document.getElementById('gaugeArc');
+  const circumference = 540;
+  const offset = circumference * (1 - riskPct/100);
+  gaugeArc.style.strokeDashoffset = offset;
+
+  document.getElementById('pctNum').textContent = riskPct + '%';
+
+  const levelBadge = document.getElementById('levelBadge');
+  const resultMsg = document.getElementById('resultMsg');
+  const ctaTitle = document.getElementById('ctaTitle');
+  const ctaMsg = document.getElementById('ctaMsg');
+  let color, levelText, msg;
+
+  const notRegistered = !state[0];
+
+  if(!notRegistered && riskPct <= 15){
+    color = 'var(--safe)';
+    levelText = '良好：加入済みで体制も整っています';
+    msg = '住宅完成保証への加入・運用体制ともに整っています。今後は更新管理と営業現場での訴求強化を続けることで、優位性をさらに高められます。';
+    ctaTitle.textContent = '運用の質をさらに高めませんか';
+    ctaMsg.textContent = '登録済みでも、社内体制の一部に改善余地がある場合があります。無料相談で運用面の見直しポイントをご確認いただけます。';
+  } else if(!notRegistered && riskPct <= 45){
+    color = 'var(--warn)';
+    levelText = '要改善：加入していても運用に穴があります';
+    msg = 'せっかく保証に加入していても、社内体制や営業現場への浸透が不十分だと、お客様への訴求力を活かしきれていません。宝の持ち腐れになっているかもしれません。';
+    ctaTitle.textContent = '運用体制の見直しをご相談ください';
+    ctaMsg.textContent = '加入している保証を最大限に活かすための体制づくりを、無料相談でサポートします。';
+  } else {
+    color = 'var(--danger)';
+    levelText = '危険：未加入または重大なリスクを抱えています';
+    msg = '住宅完成保証に未加入、またはそれに近い状態です。この状態のまま契約を続けることは、万が一の倒産時にお客様の既払金を守れず、経営者個人の責任問題に発展するリスクを抱えているということです。また、保証ありの競合他社との比較で選ばれない可能性も高まります。早急な登録検討を強くおすすめします。';
+    ctaTitle.textContent = '今すぐ住宅完成保証への登録をご検討ください';
+    ctaMsg.textContent = '未加入のままでは、お客様の信頼も受注機会も守れません。まずは無料相談・資料請求で、自社に合った保証機関と登録の進め方をご確認ください。';
+  }
+
+  gaugeArc.style.stroke = color;
+  levelBadge.style.background = color;
+  levelBadge.style.color = '#fff';
+  levelBadge.textContent = levelText;
+  resultMsg.textContent = msg;
+
+  const unresolvedList = document.getElementById('unresolvedList');
+  unresolvedList.innerHTML = '';
+  const unresolvedBox = document.getElementById('unresolvedBox');
+  const unresolvedItems = questions.filter((q,i) => !state[i]);
+  if(unresolvedItems.length === 0){
+    unresolvedBox.style.display = 'none';
+  } else {
+    unresolvedBox.style.display = 'block';
+    unresolvedItems.forEach(q => {
+      const li = document.createElement('li');
+      li.textContent = q.text;
+      unresolvedList.appendChild(li);
+    });
+  }
+
+  document.getElementById('result').classList.add('show');
+  document.getElementById('result').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+document.getElementById('retryBtn').addEventListener('click', () => {
+  state.fill(false);
+  document.querySelectorAll('.q-item').forEach(el => {
+    el.classList.remove('checked');
+    el.setAttribute('aria-checked','false');
+  });
+  updateHint();
+  document.getElementById('result').classList.remove('show');
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+</script>
+</body>
+</html>
