@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>住宅完成保証 リスク診断チェック</title>
+<style>
+  :root{
+    --navy:#1E2761;
+    --navy-dark:#141B49;
+    --ice:#CADCFC;
+    --gold:#B8892B;
+    --gold-light:#E8D9B5;
+    --text:#26314A;
+    --muted:#5B6B8C;
+    --card:#F4F7FC;
+    --line:#DCE3F0;
+    --safe:#0E8F6E;
+    --warn:#C98A1F;
+    --danger:#B23A3A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Yu Gothic","Hiragino Sans","Noto Sans JP",sans-serif;
+    background:linear-gradient(180deg,#F7F9FD 0%, #EEF2FA 100%);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:40px 16px 80px;
+  }
+  .wrap{width:100%;max-width:720px;}
+
+  .header{
+    background:var(--navy);
+    border-radius:16px;
+    padding:36px 32px;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+    margin-bottom:28px;
+  }
+  .header::after{
+    content:"";
+    position:absolute;
+    right:-40px; top:-60px;
+    width:180px;height:180px;
+    border-radius:50%;
+    background:var(--navy-dark);
+  }
+  .eyebrow{
+    color:var(--gold); font-size:13px; font-weight:700;
+    letter-spacing:2px; margin-bottom:10px; position:relative; z-index:1;
+  }
+  h1{
+    font-size:26px; margin:0 0 10px; position:relative; z-index:1; line-height:1.4;
+  }
+  .lead{
+    color:var(--ice); font-size:14.5px; line-height:1.7; margin:0; position:relative; z-index:1;
+  }
+
+  .progress-track{
+    height:6px; background:var(--line); border-radius:99px; margin:0 0 28px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; width:0%; background:var(--gold); border-radius:99px;
+    transition:width .3s ease;
+  }
+
+  .q-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px;}
+  .q-item{
+    background:#fff; border:1px solid var(--line); border-radius:12px;
+    padding:18px 20px; display:flex; align-items:flex-start; gap:14px;
+    cursor:pointer; transition:border-color .15s ease, background .15s ease;
+  }
+  .q-item:hover{border-color:var(--gold);}
+  .q-item.checked{background:var(--card); border-color:var(--navy);}
+
+  .q-num{
+    flex:none; width:26px;height:26px;border-radius:50%;
+    background:var(--card); color:var(--muted); font-size:12.5px; font-weight:700;
+    display:flex;align-items:center;justify-content:center; margin-top:1px;
+  }
+  .q-item.checked .q-num{background:var(--navy); color:#fff;}
+
+  .checkbox{
+    flex:none; width:22px;height:22px; border-radius:6px; border:2px solid var(--line);
+    display:flex;align-items:center;justify-content:center; margin-top:1px;
+    transition:all .15s ease; background:#fff;
+  }
+  .q-item.checked .checkbox{background:var(--navy); border-color:var(--navy);}
+  .checkbox svg{width:13px;height:13px; opacity:0; transition:opacity .1s ease;}
+  .q-item.checked .checkbox svg{opacity:1;}
+
+  .q-text{font-size:15px; line-height:1.6; color:var(--text);}
+  .q-item input{position:absolute; opacity:0; pointer-events:none;}
+
+  .submit-row{margin-top:30px; text-align:center;}
+  .btn{
+    appearance:none; border:none; cursor:pointer;
+    background:var(--gold); color:#fff; font-size:15.5px; font-weight:700;
+    padding:15px 40px; border-radius:99px; letter-spacing:.5px;
+    transition:transform .12s ease, box-shadow .12s ease;
+    box-shadow:0 8px 20px rgba(184,137,43,.28);
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:focus-visible{outline:3px solid var(--navy); outline-offset:3px;}
+  .btn:disabled{background:#C9CEDC; box-shadow:none; cursor:not-allowed;}
+  .hint{margin-top:12px; font-size:12.5px; color:var(--muted);}
+
+  /* Result */
+  .result{
+    display:none; margin-top:28px; background:#fff; border-radius:16px;
+    border:1px solid var(--line); padding:32px; text-align:center;
+  }
+  .result.show{display:block; animation:fadeUp .35s ease;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+  .gauge-wrap{position:relative; width:200px; height:200px; margin:0 auto 18px;}
+  .gauge-wrap svg{transform:rotate(-90deg);}
+  .gauge-pct{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .gauge-pct .num{font-size:38px; font-weight:800; line-height:1;}
+  .gauge-pct .label{font-size:12px; color:var(--muted); margin-top:4px;}
+
+  .level-badge{
+    display:inline-block; padding:6px 18px; border-radius:99px; font-size:13.5px; font-weight:700;
+    margin-bottom:14px;
+  }
+  .result-msg{font-size:15px; line-height:1.8; color:var(--text); max-width:480px; margin:0 auto 20px;}
+
+  .checked-list{
+    text-align:left; background:var(--card); border-radius:12px; padding:18px 20px;
+    margin:0 auto 8px; max-width:520px;
+  }
+  .checked-list h3{font-size:13px; color:var(--navy); margin:0 0 10px; letter-spacing:.5px;}
+  .checked-list ul{margin:0; padding-left:18px; font-size:13.5px; color:var(--muted); line-height:1.9;}
+
+  .retry{
+    margin-top:20px; background:none; border:none; color:var(--navy); font-size:13.5px;
+    text-decoration:underline; cursor:pointer; font-weight:700;
+  }
+
+  footer{text-align:center; margin-top:24px; font-size:11.5px; color:var(--muted); line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="eyebrow">診断チェック</div>
+    <h1>住宅完成保証 リスク診断</h1>
+    <p class="lead">当てはまる項目にチェックしてください。契約前の「見えないリスク」を診断します。</p>
+  </div>
+
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+  <ul class="q-list" id="qList"></ul>
+
+  <div class="submit-row">
+    <button class="btn" id="submitBtn">診断結果を見る</button>
+    <div class="hint" id="hintText">8項目中 0項目にチェック</div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="gauge-wrap">
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="86" fill="none" stroke="#EEF2FA" stroke-width="16"/>
+        <circle id="gaugeArc" cx="100" cy="100" r="86" fill="none" stroke="var(--gold)" stroke-width="16"
+                stroke-linecap="round" stroke-dasharray="540" stroke-dashoffset="540"
+                style="transition:stroke-dashoffset .6s ease, stroke .3s ease;"/>
+      </svg>
+      <div class="gauge-pct">
+        <div class="num" id="pctNum">0%</div>
+        <div class="label">リスク度</div>
+      </div>
+    </div>
+
+    <div class="level-badge" id="levelBadge">診断結果</div>
+    <p class="result-msg" id="resultMsg"></p>
+
+    <div class="checked-list" id="unresolvedBox">
+      <h3>未確認・未対策の項目</h3>
+      <ul id="unresolvedList"></ul>
+    </div>
+
+    <div>
+      <button class="retry" id="retryBtn">もう一度診断する</button>
+    </div>
+  </div>
+
+  <footer>本診断は一般的な傾向を簡易的に示すものであり、個別の契約・保証内容を保証するものではありません。<br>詳細は建築会社または保証機関に直接ご確認ください。</footer>
+</div>
+
+<script>
+const questions = [
+  "「住宅完成保証」という制度を知っている",
+  "依頼予定（または契約済み）の建築会社が、保証機関に登録しているか確認した",
+  "建築会社が倒産した場合、誰がどのように費用を負担するか説明を受けた",
+  "契約書・見積書に保証内容の記載があるか確認した",
+  "建築会社の決算内容や経営状況について何らかの情報を確認した",
+  "前払金・中間金の金額と支払いタイミングを把握している",
+  "保証の対象外になる費用（土地代・設計費用など）を理解している",
+  "万が一のときの相談窓口（保証機関の連絡先）を知っている"
+];
+
+const qList = document.getElementById('qList');
+const state = new Array(questions.length).fill(false);
+
+questions.forEach((q, i) => {
+  const li = document.createElement('li');
+  li.className = 'q-item';
+  li.setAttribute('role','checkbox');
+  li.setAttribute('aria-checked','false');
+  li.setAttribute('tabindex','0');
+  li.innerHTML = `
+    <span class="q-num">${i+1}</span>
+    <span class="checkbox">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <span class="q-text">${q}</span>
+  `;
+  function toggle(){
+    state[i] = !state[i];
+    li.classList.toggle('checked', state[i]);
+    li.setAttribute('aria-checked', String(state[i]));
+    updateHint();
+  }
+  li.addEventListener('click', toggle);
+  li.addEventListener('keydown', (e) => {
+    if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); toggle(); }
+  });
+  qList.appendChild(li);
+});
+
+const hintText = document.getElementById('hintText');
+const progressFill = document.getElementById('progressFill');
+function updateHint(){
+  const checked = state.filter(Boolean).length;
+  hintText.textContent = `${questions.length}項目中 ${checked}項目にチェック`;
+  progressFill.style.width = (checked / questions.length * 100) + '%';
+}
+
+document.getElementById('submitBtn').addEventListener('click', () => {
+  const checkedCount = state.filter(Boolean).length;
+  const total = questions.length;
+  const riskPct = Math.round((total - checkedCount) / total * 100);
+
+  const gaugeArc = document.getElementById('gaugeArc');
+  const circumference = 540;
+  const offset = circumference * (1 - riskPct/100);
+  gaugeArc.style.strokeDashoffset = offset;
+
+  document.getElementById('pctNum').textContent = riskPct + '%';
+
+  const levelBadge = document.getElementById('levelBadge');
+  const resultMsg = document.getElementById('resultMsg');
+  let color, levelText, msg;
+
+  if(riskPct <= 20){
+    color = 'var(--safe)';
+    levelText = '安心レベル：リスクは低め';
+    msg = 'リスクへの備えは概ねできています。引き続き、契約前に保証内容と保証機関への登録状況を書面で確認しておきましょう。';
+  } else if(riskPct <= 50){
+    color = 'var(--warn)';
+    levelText = '要注意レベル：確認不足があります';
+    msg = 'いくつかの重要な確認が抜けています。特に「保証機関への登録有無」と「保証の対象範囲」は契約前に必ず確認しておきたいポイントです。';
+  } else {
+    color = 'var(--danger)';
+    levelText = '危険レベル：リスクへの備えが不足しています';
+    msg = '万が一の工事中断に対する備えがほとんど確認できていません。契約を進める前に、住宅完成保証の登録状況や保証内容について、建築会社に直接確認することを強くおすすめします。';
+  }
+
+  gaugeArc.style.stroke = color;
+  levelBadge.style.background = color;
+  levelBadge.style.color = '#fff';
+  levelBadge.textContent = levelText;
+  resultMsg.textContent = msg;
+
+  const unresolvedList = document.getElementById('unresolvedList');
+  unresolvedList.innerHTML = '';
+  const unresolvedBox = document.getElementById('unresolvedBox');
+  const unresolvedItems = questions.filter((q,i) => !state[i]);
+  if(unresolvedItems.length === 0){
+    unresolvedBox.style.display = 'none';
+  } else {
+    unresolvedBox.style.display = 'block';
+    unresolvedItems.forEach(q => {
+      const li = document.createElement('li');
+      li.textContent = q;
+      unresolvedList.appendChild(li);
+    });
+  }
+
+  document.getElementById('result').classList.add('show');
+  document.getElementById('result').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+document.getElementById('retryBtn').addEventListener('click', () => {
+  state.fill(false);
+  document.querySelectorAll('.q-item').forEach(el => {
+    el.classList.remove('checked');
+    el.setAttribute('aria-checked','false');
+  });
+  updateHint();
+  document.getElementById('result').classList.remove('show');
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+</script>
+</body>
+</html>
