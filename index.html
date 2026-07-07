@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>住宅完成保証 リスク診断チェック</title>
+<title>住宅完成保証 未加入リスク診断</title>
 <style>
   :root{
     --navy:#1E2761;
@@ -54,7 +54,7 @@
     letter-spacing:2px; margin-bottom:10px; position:relative; z-index:1;
   }
   h1{
-    font-size:26px; margin:0 0 10px; position:relative; z-index:1; line-height:1.4;
+    font-size:25px; margin:0 0 10px; position:relative; z-index:1; line-height:1.4;
   }
   .lead{
     color:var(--ice); font-size:14.5px; line-height:1.7; margin:0; position:relative; z-index:1;
@@ -76,6 +76,8 @@
   }
   .q-item:hover{border-color:var(--gold);}
   .q-item.checked{background:var(--card); border-color:var(--navy);}
+  .q-item.key{border-color:var(--gold-light); background:#FFFBF3;}
+  .q-item.key.checked{background:var(--card); border-color:var(--navy);}
 
   .q-num{
     flex:none; width:26px;height:26px;border-radius:50%;
@@ -94,6 +96,11 @@
   .q-item.checked .checkbox svg{opacity:1;}
 
   .q-text{font-size:15px; line-height:1.6; color:var(--text);}
+  .q-sub{display:block; font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.5;}
+  .key-tag{
+    display:inline-block; font-size:10.5px; font-weight:700; color:var(--gold);
+    border:1px solid var(--gold-light); border-radius:99px; padding:1px 8px; margin-bottom:5px;
+  }
   .q-item input{position:absolute; opacity:0; pointer-events:none;}
 
   .submit-row{margin-top:30px; text-align:center;}
@@ -106,7 +113,6 @@
   }
   .btn:hover{transform:translateY(-1px);}
   .btn:focus-visible{outline:3px solid var(--navy); outline-offset:3px;}
-  .btn:disabled{background:#C9CEDC; box-shadow:none; cursor:not-allowed;}
   .hint{margin-top:12px; font-size:12.5px; color:var(--muted);}
 
   /* Result */
@@ -130,18 +136,29 @@
     display:inline-block; padding:6px 18px; border-radius:99px; font-size:13.5px; font-weight:700;
     margin-bottom:14px;
   }
-  .result-msg{font-size:15px; line-height:1.8; color:var(--text); max-width:480px; margin:0 auto 20px;}
+  .result-msg{font-size:15px; line-height:1.8; color:var(--text); max-width:500px; margin:0 auto 20px;}
 
   .checked-list{
     text-align:left; background:var(--card); border-radius:12px; padding:18px 20px;
-    margin:0 auto 8px; max-width:520px;
+    margin:0 auto 20px; max-width:540px;
   }
   .checked-list h3{font-size:13px; color:var(--navy); margin:0 0 10px; letter-spacing:.5px;}
   .checked-list ul{margin:0; padding-left:18px; font-size:13.5px; color:var(--muted); line-height:1.9;}
 
+  .cta-box{
+    max-width:540px; margin:0 auto; background:var(--navy); border-radius:14px;
+    padding:26px 24px; color:#fff;
+  }
+  .cta-box h3{margin:0 0 8px; font-size:17px;}
+  .cta-box p{margin:0 0 16px; font-size:13.5px; color:var(--ice); line-height:1.7;}
+  .cta-btn{
+    display:inline-block; background:var(--gold); color:#fff; font-weight:700; font-size:14.5px;
+    padding:12px 30px; border-radius:99px; text-decoration:none;
+  }
+
   .retry{
-    margin-top:20px; background:none; border:none; color:var(--navy); font-size:13.5px;
-    text-decoration:underline; cursor:pointer; font-weight:700;
+    margin-top:20px; background:none; border:none; color:var(--muted); font-size:12.5px;
+    text-decoration:underline; cursor:pointer;
   }
 
   footer{text-align:center; margin-top:24px; font-size:11.5px; color:var(--muted); line-height:1.7;}
@@ -151,9 +168,9 @@
 <div class="wrap">
 
   <div class="header">
-    <div class="eyebrow">診断チェック</div>
-    <h1>住宅完成保証 リスク診断</h1>
-    <p class="lead">当てはまる項目にチェックしてください。契約前の「見えないリスク」を診断します。</p>
+    <div class="eyebrow">未加入企業向け 緊急診断</div>
+    <h1>その経営、倒産リスクが<br>無防備なままかもしれません</h1>
+    <p class="lead">住宅完成保証への未加入は、お客様からの信頼喪失・受注機会の損失に直結します。自社の状態を30秒でチェックしてください。</p>
   </div>
 
   <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
@@ -161,7 +178,7 @@
   <ul class="q-list" id="qList"></ul>
 
   <div class="submit-row">
-    <button class="btn" id="submitBtn">診断結果を見る</button>
+    <button class="btn" id="submitBtn">危険度を診断する</button>
     <div class="hint" id="hintText">8項目中 0項目にチェック</div>
   </div>
 
@@ -175,7 +192,7 @@
       </svg>
       <div class="gauge-pct">
         <div class="num" id="pctNum">0%</div>
-        <div class="label">リスク度</div>
+        <div class="label">未加入リスク度</div>
       </div>
     </div>
 
@@ -183,8 +200,14 @@
     <p class="result-msg" id="resultMsg"></p>
 
     <div class="checked-list" id="unresolvedBox">
-      <h3>未確認・未対策の項目</h3>
+      <h3>未対応・要確認の項目</h3>
       <ul id="unresolvedList"></ul>
+    </div>
+
+    <div class="cta-box" id="ctaBox">
+      <h3 id="ctaTitle">住宅完成保証への登録をご検討ください</h3>
+      <p id="ctaMsg">未加入のままでは、比較検討段階でのお客様離脱や、いざという時の経営責任リスクを抱え続けることになります。まずは資料請求・個別相談から始められます。</p>
+      <a class="cta-btn" href="#" id="ctaLink">無料相談・資料請求はこちら</a>
     </div>
 
     <div>
@@ -192,19 +215,19 @@
     </div>
   </div>
 
-  <footer>本診断は一般的な傾向を簡易的に示すものであり、個別の契約・保証内容を保証するものではありません。<br>詳細は建築会社または保証機関に直接ご確認ください。</footer>
+  <footer>本診断は一般的な傾向を簡易的に示す自己チェックです。実際の登録要件・審査基準・保証内容は各保証機関に直接ご確認ください。</footer>
 </div>
 
 <script>
 const questions = [
-  "「住宅完成保証」という制度を知っている",
-  "依頼予定（または契約済み）の建築会社が、保証機関に登録しているか確認した",
-  "建築会社が倒産した場合、誰がどのように費用を負担するか説明を受けた",
-  "契約書・見積書に保証内容の記載があるか確認した",
-  "建築会社の決算内容や経営状況について何らかの情報を確認した",
-  "前払金・中間金の金額と支払いタイミングを把握している",
-  "保証の対象外になる費用（土地代・設計費用など）を理解している",
-  "万が一のときの相談窓口（保証機関の連絡先）を知っている"
+  { text:"自社は住宅完成保証（保証機関）に登録している", sub:"未登録の場合、倒産時にお客様の既払金・工事継続を守る仕組みが自社にはありません", key:true },
+  { text:"倒産した場合、既払い工事費や引き継ぎ費用を自社が肩代わりする準備がある", sub:"保証がなければ、その負担はすべて自社の経営責任になります" },
+  { text:"直近3期分の決算書類など、登録・更新に必要な財務資料をいつでも提出できる", sub:"" },
+  { text:"営業担当者が保証内容・保証範囲をお客様に正しく説明できる", sub:"説明できなければ、比較検討段階で「保証あり」の競合他社に流れます" },
+  { text:"保証制度への登録を、パンフレットや営業資料・自社サイトで明記している", sub:"" },
+  { text:"金融機関・不動産会社からの紹介時に、保証登録の有無を聞かれたことがある、またはその対応ができる", sub:"" },
+  { text:"直近1年以内に、競合他社が保証制度を導入したという情報を把握している", sub:"" },
+  { text:"保証機関からの更新案内・有効期限を管理する担当者・仕組みがある", sub:"" }
 ];
 
 const qList = document.getElementById('qList');
@@ -212,7 +235,7 @@ const state = new Array(questions.length).fill(false);
 
 questions.forEach((q, i) => {
   const li = document.createElement('li');
-  li.className = 'q-item';
+  li.className = 'q-item' + (q.key ? ' key' : '');
   li.setAttribute('role','checkbox');
   li.setAttribute('aria-checked','false');
   li.setAttribute('tabindex','0');
@@ -221,7 +244,7 @@ questions.forEach((q, i) => {
     <span class="checkbox">
       <svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </span>
-    <span class="q-text">${q}</span>
+    <span class="q-text">${q.key ? '<span class="key-tag">最重要</span><br>' : ''}${q.text}${q.sub ? `<span class="q-sub">${q.sub}</span>` : ''}</span>
   `;
   function toggle(){
     state[i] = !state[i];
@@ -244,10 +267,18 @@ function updateHint(){
   progressFill.style.width = (checked / questions.length * 100) + '%';
 }
 
+// key question (index 0) carries extra weight, since non-registration is the core risk driver
+const KEY_WEIGHT = 2;
+
 document.getElementById('submitBtn').addEventListener('click', () => {
-  const checkedCount = state.filter(Boolean).length;
-  const total = questions.length;
-  const riskPct = Math.round((total - checkedCount) / total * 100);
+  let earned = 0;
+  let totalWeight = 0;
+  questions.forEach((q, i) => {
+    const w = q.key ? KEY_WEIGHT : 1;
+    totalWeight += w;
+    if(state[i]) earned += w;
+  });
+  const riskPct = Math.round((totalWeight - earned) / totalWeight * 100);
 
   const gaugeArc = document.getElementById('gaugeArc');
   const circumference = 540;
@@ -258,20 +289,30 @@ document.getElementById('submitBtn').addEventListener('click', () => {
 
   const levelBadge = document.getElementById('levelBadge');
   const resultMsg = document.getElementById('resultMsg');
+  const ctaTitle = document.getElementById('ctaTitle');
+  const ctaMsg = document.getElementById('ctaMsg');
   let color, levelText, msg;
 
-  if(riskPct <= 20){
+  const notRegistered = !state[0];
+
+  if(!notRegistered && riskPct <= 15){
     color = 'var(--safe)';
-    levelText = '安心レベル：リスクは低め';
-    msg = 'リスクへの備えは概ねできています。引き続き、契約前に保証内容と保証機関への登録状況を書面で確認しておきましょう。';
-  } else if(riskPct <= 50){
+    levelText = '良好：加入済みで体制も整っています';
+    msg = '住宅完成保証への加入・運用体制ともに整っています。今後は更新管理と営業現場での訴求強化を続けることで、優位性をさらに高められます。';
+    ctaTitle.textContent = '運用の質をさらに高めませんか';
+    ctaMsg.textContent = '登録済みでも、社内体制の一部に改善余地がある場合があります。無料相談で運用面の見直しポイントをご確認いただけます。';
+  } else if(!notRegistered && riskPct <= 45){
     color = 'var(--warn)';
-    levelText = '要注意レベル：確認不足があります';
-    msg = 'いくつかの重要な確認が抜けています。特に「保証機関への登録有無」と「保証の対象範囲」は契約前に必ず確認しておきたいポイントです。';
+    levelText = '要改善：加入していても運用に穴があります';
+    msg = 'せっかく保証に加入していても、社内体制や営業現場への浸透が不十分だと、お客様への訴求力を活かしきれていません。宝の持ち腐れになっているかもしれません。';
+    ctaTitle.textContent = '運用体制の見直しをご相談ください';
+    ctaMsg.textContent = '加入している保証を最大限に活かすための体制づくりを、無料相談でサポートします。';
   } else {
     color = 'var(--danger)';
-    levelText = '危険レベル：リスクへの備えが不足しています';
-    msg = '万が一の工事中断に対する備えがほとんど確認できていません。契約を進める前に、住宅完成保証の登録状況や保証内容について、建築会社に直接確認することを強くおすすめします。';
+    levelText = '危険：未加入または重大なリスクを抱えています';
+    msg = '住宅完成保証に未加入、またはそれに近い状態です。この状態のまま契約を続けることは、万が一の倒産時にお客様の既払金を守れず、経営者個人の責任問題に発展するリスクを抱えているということです。また、保証ありの競合他社との比較で選ばれない可能性も高まります。早急な登録検討を強くおすすめします。';
+    ctaTitle.textContent = '今すぐ住宅完成保証への登録をご検討ください';
+    ctaMsg.textContent = '未加入のままでは、お客様の信頼も受注機会も守れません。まずは無料相談・資料請求で、自社に合った保証機関と登録の進め方をご確認ください。';
   }
 
   gaugeArc.style.stroke = color;
@@ -290,7 +331,7 @@ document.getElementById('submitBtn').addEventListener('click', () => {
     unresolvedBox.style.display = 'block';
     unresolvedItems.forEach(q => {
       const li = document.createElement('li');
-      li.textContent = q;
+      li.textContent = q.text;
       unresolvedList.appendChild(li);
     });
   }
